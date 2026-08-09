@@ -45,7 +45,7 @@ export function HomePage({ compact: compactProp }: { compact?: boolean }) {
           to="/new"
           className="hidden items-center rounded-xl bg-sn-blue px-4 py-2.5 text-sm font-bold text-white shadow-md shadow-sn-blue/25 hover:bg-sn-blue-dark md:inline-flex"
         >
-          ＋ 新しいNOTE
+          ＋ NEW NOTE
         </Link>
       </header>
 
@@ -53,14 +53,14 @@ export function HomePage({ compact: compactProp }: { compact?: boolean }) {
         to="/new"
         className="mb-4 flex w-full items-center justify-center rounded-xl bg-sn-blue py-3 text-sm font-bold text-white shadow-md shadow-sn-blue/30 md:hidden"
       >
-        ＋ 新しいNOTE
+        ＋ NEW NOTE
       </Link>
 
       <div className="grid gap-4 lg:grid-cols-[1.2fr_0.8fr] lg:gap-6">
         <section className="rounded-2xl border border-sn-line bg-white p-3 shadow-sm md:p-5">
           <Calendar
-            year={2026}
-            monthIndex={7}
+            initialYear={2026}
+            initialMonthIndex={7}
             todayKey={todayKey}
             dateCounts={dateCounts}
             onSelectDate={(key) => navigate(`/day/${key}`)}

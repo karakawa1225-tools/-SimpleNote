@@ -42,7 +42,7 @@ export function Sidebar({
   return (
     <aside
       className={cn(
-        'flex h-full w-[240px] shrink-0 flex-col border-r border-sn-line bg-white',
+        'flex h-full w-full min-w-0 shrink-0 flex-col border-r border-sn-line bg-white',
         className,
       )}
     >

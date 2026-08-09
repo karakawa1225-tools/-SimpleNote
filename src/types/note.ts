@@ -26,6 +26,12 @@ export interface Note {
   favorite: boolean
   trashed: boolean
   attachments: Attachment[]
+  /** 本文の罫線表示 */
+  ruledLines?: boolean
+  /** タイトル下に日時を表示するか（未設定時は表示） */
+  showDateTime?: boolean
+  /** タイトル下に表示する日時（ISO）。未設定時は updatedAt / createdAt */
+  displayAt?: string | null
 }
 
 export interface FolderMeta {

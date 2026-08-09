@@ -1,10 +1,16 @@
 import { ChevronLeft } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { AttachmentEditor } from '@/components/AttachmentEditor'
+import {
+  NoteDateTimeField,
+  resolveDisplayAt,
+  type DateTimeMode,
+} from '@/components/NoteDateTimeField'
+import { RuledBodyField } from '@/components/RuledBodyField'
 import { FOLDERS } from '@/data/sampleNotes'
 import { useNotes } from '@/context/NotesContext'
-import { formatDateTime } from '@/lib/date'
+import { toDateTimeLocalValue } from '@/lib/date'
 import { isEmbeddedFrame } from '@/lib/embed'
 import type { Attachment, FolderId } from '@/types/note'
 import { cn } from '@/lib/cn'
@@ -17,18 +23,25 @@ export function NewNotePage({ compact: compactProp }: { compact?: boolean }) {
   const [title, setTitle] = useState('')
   const [body, setBody] = useState('')
   const [memo, setMemo] = useState('')
+  const [ruledLines, setRuledLines] = useState(false)
+  const [dateMode, setDateMode] = useState<DateTimeMode>('now')
+  const [customDate, setCustomDate] = useState(() =>
+    toDateTimeLocalValue(new Date()),
+  )
   const [attachments, setAttachments] = useState<Attachment[]>([])
-  const [nowIso, setNowIso] = useState(() => new Date().toISOString())
-
-  useEffect(() => {
-    const id = window.setInterval(() => {
-      setNowIso(new Date().toISOString())
-    }, 30_000)
-    return () => window.clearInterval(id)
-  }, [])
 
   const save = () => {
-    const note = addNote({ title, body, memo, folderId, attachments })
+    const displayAt = resolveDisplayAt(dateMode, customDate)
+    const note = addNote({
+      title,
+      body,
+      memo,
+      folderId,
+      attachments,
+      ruledLines,
+      showDateTime: dateMode !== 'none',
+      displayAt,
+    })
     navigate(`/notes/${note.id}`)
   }
 
@@ -48,8 +61,8 @@ export function NewNotePage({ compact: compactProp }: { compact?: boolean }) {
         >
           <ChevronLeft className="h-5 w-5" />
         </button>
-        <h1 className="font-display text-lg font-black text-sn-navy">
-          新しいNOTE
+        <h1 className="font-display text-lg font-black tracking-wide text-sn-navy">
+          NEW NOTE
         </h1>
       </header>
 
@@ -77,22 +90,22 @@ export function NewNotePage({ compact: compactProp }: { compact?: boolean }) {
           className="w-full rounded-xl border border-sn-line bg-white px-3 py-3 text-base font-bold outline-none focus:border-sn-blue"
         />
       </label>
-      <p className="mb-4 text-xs font-semibold text-sn-muted">
-        {formatDateTime(nowIso)}
-      </p>
 
-      <label className="mb-4 flex min-h-0 flex-1 flex-col">
-        <span className="mb-1.5 block text-xs font-bold text-sn-muted">本文</span>
-        <textarea
+      <NoteDateTimeField
+        mode={dateMode}
+        customValue={customDate}
+        onModeChange={setDateMode}
+        onCustomChange={setCustomDate}
+      />
+
+      <div className="mb-4 flex min-h-0 flex-1 flex-col">
+        <RuledBodyField
           value={body}
-          onChange={(e) => setBody(e.target.value)}
-          placeholder="本文を入力"
-          className={cn(
-            'w-full flex-1 resize-y rounded-xl border border-sn-line bg-white px-3 py-3 text-sm leading-7 outline-none focus:border-sn-blue',
-            'min-h-[50vh] md:min-h-[420px]',
-          )}
+          onChange={setBody}
+          ruled={ruledLines}
+          onRuledChange={setRuledLines}
         />
-      </label>
+      </div>
 
       <div className="mb-4">
         <AttachmentEditor attachments={attachments} onChange={setAttachments} />

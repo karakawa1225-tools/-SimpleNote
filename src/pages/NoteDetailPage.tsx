@@ -2,12 +2,26 @@ import { ChevronLeft, Folder, Save, Star } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { AttachmentEditor } from '@/components/AttachmentEditor'
+import {
+  NoteDateTimeField,
+  resolveDisplayAt,
+  type DateTimeMode,
+} from '@/components/NoteDateTimeField'
+import { RuledBodyField } from '@/components/RuledBodyField'
 import { folderById } from '@/data/sampleNotes'
 import { useNotes } from '@/context/NotesContext'
-import { formatDateTime } from '@/lib/date'
+import { toDateTimeLocalValue } from '@/lib/date'
 import { isEmbeddedFrame } from '@/lib/embed'
 import type { Attachment } from '@/types/note'
 import { cn } from '@/lib/cn'
+
+function initialMode(note: {
+  showDateTime?: boolean
+  displayAt?: string | null
+}): DateTimeMode {
+  if (note.showDateTime === false) return 'none'
+  return 'custom'
+}
 
 export function NoteDetailPage({ compact: compactProp }: { compact?: boolean }) {
   const compact = compactProp ?? isEmbeddedFrame()
@@ -19,6 +33,15 @@ export function NoteDetailPage({ compact: compactProp }: { compact?: boolean }) 
   const [title, setTitle] = useState(note?.title ?? '')
   const [body, setBody] = useState(note?.body ?? '')
   const [memo, setMemo] = useState(note?.memo ?? '')
+  const [ruledLines, setRuledLines] = useState(note?.ruledLines ?? false)
+  const [dateMode, setDateMode] = useState<DateTimeMode>(() =>
+    note ? initialMode(note) : 'now',
+  )
+  const [customDate, setCustomDate] = useState(() =>
+    toDateTimeLocalValue(
+      new Date(note?.displayAt ?? note?.updatedAt ?? Date.now()),
+    ),
+  )
   const [attachments, setAttachments] = useState<Attachment[]>(
     note?.attachments ?? [],
   )
@@ -28,6 +51,13 @@ export function NoteDetailPage({ compact: compactProp }: { compact?: boolean }) 
     setTitle(note.title)
     setBody(note.body)
     setMemo(note.memo)
+    setRuledLines(note.ruledLines ?? false)
+    setDateMode(initialMode(note))
+    setCustomDate(
+      toDateTimeLocalValue(
+        new Date(note.displayAt ?? note.updatedAt ?? Date.now()),
+      ),
+    )
     setAttachments(note.attachments)
   }, [note])
 
@@ -49,7 +79,17 @@ export function NoteDetailPage({ compact: compactProp }: { compact?: boolean }) 
   const folder = folderById(note.folderId)
 
   const save = () => {
-    updateNote(note.id, { title, body, memo, attachments })
+    const displayAt = resolveDisplayAt(dateMode, customDate)
+    updateNote(note.id, {
+      title,
+      body,
+      memo,
+      attachments,
+      ruledLines,
+      showDateTime: dateMode !== 'none',
+      displayAt,
+      ...(displayAt ? { createdAt: displayAt } : {}),
+    })
     navigate('/home')
   }
 
@@ -98,15 +138,23 @@ export function NoteDetailPage({ compact: compactProp }: { compact?: boolean }) 
           compact ? 'text-xl' : 'text-2xl',
         )}
       />
-      <p className="mt-1 text-xs font-semibold text-sn-muted">
-        {formatDateTime(note.updatedAt)}
-      </p>
 
-      <textarea
+      <NoteDateTimeField
+        mode={dateMode}
+        customValue={customDate}
+        onModeChange={setDateMode}
+        onCustomChange={setCustomDate}
+        className="mt-2"
+      />
+
+      <RuledBodyField
         value={body}
-        onChange={(e) => setBody(e.target.value)}
-        className="mt-4 min-h-[40vh] w-full flex-1 resize-y bg-transparent text-sm leading-7 text-sn-ink outline-none md:min-h-[320px]"
+        onChange={setBody}
+        ruled={ruledLines}
+        onRuledChange={setRuledLines}
         placeholder="本文"
+        minHeightClass="min-h-[40vh] md:min-h-[320px]"
+        className="mb-2"
       />
 
       <section className="mt-6">

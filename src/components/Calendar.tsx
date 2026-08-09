@@ -1,11 +1,15 @@
+import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { useState } from 'react'
 import { daysInMonth, monthLabel, startWeekday, toDateKey } from '@/lib/date'
 import { cn } from '@/lib/cn'
 
 const WEEK = ['日', '月', '火', '水', '木', '金', '土']
 
 interface CalendarProps {
-  year: number
-  monthIndex: number
+  /** 初期表示年（省略時は今日） */
+  initialYear?: number
+  /** 初期表示月 0-11（省略時は今日） */
+  initialMonthIndex?: number
   selectedKey?: string
   todayKey?: string
   dateCounts: Record<string, number>
@@ -15,9 +19,14 @@ interface CalendarProps {
   className?: string
 }
 
+function shiftMonth(year: number, monthIndex: number, delta: number) {
+  const d = new Date(year, monthIndex + delta, 1)
+  return { year: d.getFullYear(), monthIndex: d.getMonth() }
+}
+
 export function Calendar({
-  year,
-  monthIndex,
+  initialYear,
+  initialMonthIndex,
   selectedKey,
   todayKey,
   dateCounts,
@@ -26,6 +35,12 @@ export function Calendar({
   showCounts = false,
   className,
 }: CalendarProps) {
+  const fallback = todayKey ? new Date(`${todayKey}T12:00:00`) : new Date()
+  const [year, setYear] = useState(initialYear ?? fallback.getFullYear())
+  const [monthIndex, setMonthIndex] = useState(
+    initialMonthIndex ?? fallback.getMonth(),
+  )
+
   const days = daysInMonth(year, monthIndex)
   const start = startWeekday(year, monthIndex)
   const cells: Array<number | null> = [
@@ -33,18 +48,69 @@ export function Calendar({
     ...Array.from({ length: days }, (_, i) => i + 1),
   ]
 
+  const goPrev = () => {
+    const next = shiftMonth(year, monthIndex, -1)
+    setYear(next.year)
+    setMonthIndex(next.monthIndex)
+  }
+
+  const goNext = () => {
+    const next = shiftMonth(year, monthIndex, 1)
+    setYear(next.year)
+    setMonthIndex(next.monthIndex)
+  }
+
+  const goTodayMonth = () => {
+    const d = todayKey ? new Date(`${todayKey}T12:00:00`) : new Date()
+    setYear(d.getFullYear())
+    setMonthIndex(d.getMonth())
+  }
+
+  const isCurrentMonth =
+    year === fallback.getFullYear() && monthIndex === fallback.getMonth()
+
   return (
     <div className={cn('w-full', className)}>
-      <div className="mb-2 flex items-center justify-between">
-        <h3
-          className={cn(
-            'font-display font-bold text-sn-navy',
-            variant === 'full' ? 'text-lg' : 'text-sm',
-          )}
+      <div className="mb-2 flex items-center justify-between gap-2">
+        <button
+          type="button"
+          onClick={goPrev}
+          className="rounded-lg p-1.5 text-sn-navy transition hover:bg-sn-blue-soft"
+          aria-label="前の月"
         >
-          {monthLabel(year, monthIndex)}
-        </h3>
+          <ChevronLeft className={variant === 'full' ? 'h-5 w-5' : 'h-4 w-4'} />
+        </button>
+
+        <div className="flex min-w-0 flex-1 items-center justify-center gap-2">
+          <h3
+            className={cn(
+              'font-display font-bold text-sn-navy',
+              variant === 'full' ? 'text-lg' : 'text-sm',
+            )}
+          >
+            {monthLabel(year, monthIndex)}
+          </h3>
+          {!isCurrentMonth && (
+            <button
+              type="button"
+              onClick={goTodayMonth}
+              className="shrink-0 rounded-md bg-sn-blue-soft px-2 py-0.5 text-[10px] font-bold text-sn-blue"
+            >
+              今月
+            </button>
+          )}
+        </div>
+
+        <button
+          type="button"
+          onClick={goNext}
+          className="rounded-lg p-1.5 text-sn-navy transition hover:bg-sn-blue-soft"
+          aria-label="次の月"
+        >
+          <ChevronRight className={variant === 'full' ? 'h-5 w-5' : 'h-4 w-4'} />
+        </button>
       </div>
+
       <div className="grid grid-cols-7 gap-y-1 text-center">
         {WEEK.map((w) => (
           <div
@@ -91,7 +157,7 @@ export function Calendar({
       </div>
       {variant === 'full' && (
         <p className="mt-3 text-center text-xs text-sn-muted">
-          NOTEがある日には青いドットが表示されます
+          NOTEがある日には青いドットが表示されます。矢印で月を移動できます。
         </p>
       )}
     </div>

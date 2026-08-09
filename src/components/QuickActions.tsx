@@ -11,7 +11,7 @@ import { cn } from '@/lib/cn'
 const actions = [
   {
     to: '/new',
-    label: '新しいNOTE',
+    label: 'NEW NOTE',
     icon: Plus,
     primary: true,
   },

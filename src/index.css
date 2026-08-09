@@ -20,6 +20,13 @@
     scroll-behavior: smooth;
   }
 
+  /* PC画面の文字を約1.2倍（rem基準のTailwindサイズ全体に反映） */
+  @media (min-width: 1024px) {
+    html {
+      font-size: 120%;
+    }
+  }
+
   body {
     margin: 0;
     min-width: 320px;
@@ -59,6 +66,22 @@
 
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
+  }
+
+  /* 本文・罫線あり：行ボックス下端に点線（余白と行高を一致させる） */
+  .ruled-paper {
+    --ruled-lh: 1.75rem;
+    line-height: var(--ruled-lh) !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    padding-left: 0.75rem !important;
+    padding-right: 0.75rem !important;
+    background-color: #ffffff;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='100' viewBox='0 0 10 100' preserveAspectRatio='none'%3E%3Cline x1='0' y1='98' x2='10' y2='98' stroke='%2394A3B8' stroke-width='2' stroke-dasharray='3 4' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E");
+    background-size: 0.5rem var(--ruled-lh);
+    background-repeat: repeat;
+    background-position: 0 0;
+    background-attachment: local;
   }
 }
 

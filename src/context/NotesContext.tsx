@@ -21,11 +21,17 @@ interface NotesContextValue {
     memo: string
     folderId: FolderId
     attachments?: Note['attachments']
+    ruledLines?: boolean
+    showDateTime?: boolean
+    displayAt?: string | null
   }) => Note
   updateNote: (id: string, patch: Partial<Note>) => void
   toggleFavorite: (id: string) => void
   trashNote: (id: string) => void
   restoreNote: (id: string) => void
+  restoreNotes: (ids: string[]) => void
+  deleteNotesPermanently: (ids: string[]) => void
+  emptyTrash: () => void
   notesOnDate: (dateKey: string) => Note[]
   notesInFolder: (folderId: FolderId) => Note[]
   searchNotes: (query: string) => Note[]
@@ -80,19 +86,26 @@ export function NotesProvider({ children }: { children: ReactNode }) {
       memo: string
       folderId: FolderId
       attachments?: Note['attachments']
+      ruledLines?: boolean
+      showDateTime?: boolean
+      displayAt?: string | null
     }) => {
       const now = new Date().toISOString()
+      const showDateTime = input.showDateTime ?? true
       const note: Note = {
         id: createId('note'),
         title: input.title.trim() || '無題のNOTE',
         body: input.body,
         memo: input.memo,
         folderId: input.folderId,
-        createdAt: now,
+        createdAt: input.displayAt ?? now,
         updatedAt: now,
         favorite: false,
         trashed: false,
         attachments: (input.attachments ?? []).slice(0, MAX_ATTACHMENTS),
+        ruledLines: input.ruledLines ?? false,
+        showDateTime,
+        displayAt: showDateTime ? (input.displayAt ?? now) : null,
       }
       setNotes((prev) => [note, ...prev])
       return note
@@ -133,6 +146,22 @@ export function NotesProvider({ children }: { children: ReactNode }) {
     setNotes((prev) =>
       prev.map((n) => (n.id === id ? { ...n, trashed: false } : n)),
     )
+  }, [])
+
+  const restoreNotes = useCallback((ids: string[]) => {
+    const idSet = new Set(ids)
+    setNotes((prev) =>
+      prev.map((n) => (idSet.has(n.id) ? { ...n, trashed: false } : n)),
+    )
+  }, [])
+
+  const deleteNotesPermanently = useCallback((ids: string[]) => {
+    const idSet = new Set(ids)
+    setNotes((prev) => prev.filter((n) => !idSet.has(n.id)))
+  }, [])
+
+  const emptyTrash = useCallback(() => {
+    setNotes((prev) => prev.filter((n) => !n.trashed))
   }, [])
 
   const notesOnDate = useCallback(
@@ -191,6 +220,9 @@ export function NotesProvider({ children }: { children: ReactNode }) {
       toggleFavorite,
       trashNote,
       restoreNote,
+      restoreNotes,
+      deleteNotesPermanently,
+      emptyTrash,
       notesOnDate,
       notesInFolder,
       searchNotes,
@@ -206,6 +238,9 @@ export function NotesProvider({ children }: { children: ReactNode }) {
       toggleFavorite,
       trashNote,
       restoreNote,
+      restoreNotes,
+      deleteNotesPermanently,
+      emptyTrash,
       notesOnDate,
       notesInFolder,
       searchNotes,

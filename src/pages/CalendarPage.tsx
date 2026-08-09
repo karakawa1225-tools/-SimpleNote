@@ -31,8 +31,8 @@ export function CalendarPage({ compact }: { compact?: boolean }) {
 
       <section className="rounded-2xl border border-sn-line bg-white p-4 shadow-sm lg:p-6">
         <Calendar
-          year={2026}
-          monthIndex={7}
+          initialYear={2026}
+          initialMonthIndex={7}
           todayKey={todayKey}
           dateCounts={dateCounts}
           onSelectDate={(key) => navigate(`/day/${key}`)}

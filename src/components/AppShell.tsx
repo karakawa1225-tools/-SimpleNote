@@ -35,7 +35,7 @@ function MobileDrawer() {
           showClose
           onClose={closeSidebar}
           onNavigate={closeSidebar}
-          className="h-dvh shadow-2xl"
+          className="h-dvh w-[min(80vw,260px)] shadow-2xl"
         />
       </div>
     </>
@@ -58,17 +58,23 @@ function DetailPlaceholder() {
         to="/new"
         className="mt-2 inline-flex rounded-xl bg-sn-blue px-4 py-2.5 text-sm font-bold text-white"
       >
-        ＋ 新しいNOTE
+        ＋ NEW NOTE
       </Link>
     </div>
   )
 }
 
 function MasterListPanel() {
-  const { activeNotes } = useNotes()
+  const { activeNotes, trashNote } = useNotes()
   const navigate = useNavigate()
   const match = useMatch('/notes/:id')
   const selectedId = match?.params.id
+
+  const handleDelete = (id: string, title: string) => {
+    if (!window.confirm(`「${title}」をゴミ箱へ移動しますか？`)) return
+    trashNote(id)
+    if (selectedId === id) navigate('/notes')
+  }
 
   return (
     <div className="px-4 py-5 md:px-5">
@@ -89,7 +95,10 @@ function MasterListPanel() {
           >
             <NoteCard
               note={note}
+              showActions
               onClick={() => navigate(`/notes/${note.id}`)}
+              onEdit={() => navigate(`/notes/${note.id}`)}
+              onDelete={() => handleDelete(note.id, note.title)}
             />
           </div>
         ))}
@@ -119,13 +128,13 @@ export function AppShell() {
     <div className="relative flex h-dvh overflow-hidden bg-sn-bg">
       <MobileDrawer />
 
-      {/* ① サイドバー（タブレット・PC） */}
-      <div className="hidden h-dvh shrink-0 overflow-y-auto md:block">
+      {/* ① サイドバー（タブレット・PC） 比率 2.2 → 22% */}
+      <div className="hidden h-dvh min-w-0 overflow-y-auto md:block md:w-[22%] md:shrink-0">
         <Sidebar />
       </div>
 
-      {/* ② メイン（スマホは1画面 / タブレット・PCは中央） */}
-      <div className="relative flex min-w-0 flex-1 flex-col md:border-r md:border-sn-line">
+      {/* ② メイン（スマホは1画面 / タブレット・PCは中央） 比率 4.8 → 48% */}
+      <div className="relative flex min-w-0 flex-1 flex-col md:w-[48%] md:flex-none md:shrink-0 md:border-r md:border-sn-line">
         <div className="sticky top-0 z-10 flex items-center gap-3 border-b border-sn-line bg-white/95 px-4 py-3 backdrop-blur md:hidden">
           <button
             type="button"
@@ -158,8 +167,8 @@ export function AppShell() {
         </div>
       </div>
 
-      {/* ③ 詳細（タブレット・PC）— 各ペインは縦スクロール */}
-      <aside className="hidden h-dvh w-[min(42vw,420px)] shrink-0 overflow-y-auto bg-white md:block xl:w-[460px]">
+      {/* ③ 詳細（タブレット・PC） 比率 3 → 30% */}
+      <aside className="hidden h-dvh min-w-0 overflow-y-auto bg-white md:block md:w-[30%] md:shrink-0">
         {noteMatch ? (
           <NoteDetailPage />
         ) : isNew ? (

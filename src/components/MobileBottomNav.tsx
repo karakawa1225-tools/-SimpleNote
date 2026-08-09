@@ -62,7 +62,7 @@ export function MobileBottomNav({
           <NavLink
             to="/new"
             className="absolute -top-5 flex h-14 w-14 items-center justify-center rounded-full bg-sn-blue text-white shadow-lg shadow-sn-blue/35 transition hover:bg-sn-blue-dark"
-            aria-label="新しいNOTE"
+            aria-label="NEW NOTE"
           >
             <Plus className="h-7 w-7" strokeWidth={2.5} />
           </NavLink>
