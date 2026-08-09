@@ -1,0 +1,152 @@
+@import "tailwindcss";
+
+@theme {
+  --color-sn-blue: #0066e6;
+  --color-sn-blue-dark: #0052b8;
+  --color-sn-blue-soft: #e8f1ff;
+  --color-sn-navy: #0b1f3a;
+  --color-sn-ink: #152238;
+  --color-sn-muted: #6b7a90;
+  --color-sn-yellow: #f5c400;
+  --color-sn-yellow-soft: #fff6c8;
+  --color-sn-bg: #f5f7fb;
+  --color-sn-line: #e6ebf2;
+  --font-display: "Zen Kaku Gothic New", "Manrope", sans-serif;
+  --font-body: "Manrope", "Zen Kaku Gothic New", sans-serif;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    margin: 0;
+    min-width: 320px;
+    font-family: var(--font-body);
+    color: var(--color-sn-ink);
+    background: var(--color-sn-bg);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  #root {
+    min-height: 100dvh;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+}
+
+@layer utilities {
+  .font-display {
+    font-family: var(--font-display);
+  }
+
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .safe-pb {
+    padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
+  }
+
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(28px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.anim-fade-up {
+  animation: fade-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.anim-fade-in {
+  animation: fade-in 0.6s ease both;
+}
+
+.anim-scale-in {
+  animation: scale-in 0.65s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.anim-slide-up {
+  animation: slide-up 0.75s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.delay-1 {
+  animation-delay: 0.12s;
+}
+.delay-2 {
+  animation-delay: 0.24s;
+}
+.delay-3 {
+  animation-delay: 0.36s;
+}
+.delay-4 {
+  animation-delay: 0.48s;
+}
+
+.phone-frame {
+  background: linear-gradient(160deg, #1a2332 0%, #0d121c 100%);
+  box-shadow:
+    0 28px 60px -20px rgba(11, 31, 58, 0.45),
+    0 0 0 1px rgba(255, 255, 255, 0.08) inset;
+}
+
+.hero-glow {
+  background:
+    radial-gradient(ellipse 80% 50% at 20% 0%, rgba(0, 102, 230, 0.12), transparent 55%),
+    radial-gradient(ellipse 60% 40% at 90% 10%, rgba(245, 196, 0, 0.14), transparent 50%),
+    linear-gradient(180deg, #ffffff 0%, #f5f7fb 100%);
+}
+
+.diag-band {
+  clip-path: polygon(0 12%, 100% 0, 100% 88%, 0 100%);
+}

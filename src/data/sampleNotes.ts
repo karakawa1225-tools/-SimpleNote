@@ -1,0 +1,91 @@
+import type { FolderMeta, Note } from '@/types/note'
+
+export const FOLDERS: FolderMeta[] = [
+  { id: 'work', name: '仕事・現場', color: '#0066E6' },
+  { id: 'private', name: 'プライベート', color: '#7B5CFF' },
+  { id: 'ideas', name: 'アイデア', color: '#00A3A3' },
+  { id: 'materials', name: '資料・情報', color: '#E67E22' },
+  { id: 'other', name: 'その他', color: '#6B7A90' },
+]
+
+export const folderById = (id: string) =>
+  FOLDERS.find((f) => f.id === id) ?? FOLDERS[4]
+
+export const SAMPLE_NOTES: Note[] = [
+  {
+    id: 'note-1',
+    title: '現場確認について',
+    body: '○○店舗の設置確認を行いました。\nロッカーの固定状態を確認。\n特に問題はありませんでした。\n次回、担当者へ報告予定。',
+    memo: '・担当者へ確認\n・写真を報告書に使用\n・次回の訪問は8/15予定',
+    folderId: 'work',
+    createdAt: '2026-08-09T22:35:00',
+    updatedAt: '2026-08-09T22:35:00',
+    favorite: true,
+    trashed: false,
+    attachments: [
+      { id: 'a1', type: 'image', name: '写真1.jpg', preview: '#94A3B8' },
+      { id: 'a2', type: 'image', name: '写真2.jpg', preview: '#64748B' },
+      { id: 'a3', type: 'pdf', name: '設置図面.pdf' },
+    ],
+  },
+  {
+    id: 'note-2',
+    title: 'ミーティングメモ',
+    body: '週次ミーティングの要点。\n・進捗は予定どおり\n・次週のデモ準備を進める\n・資料は共有フォルダへ',
+    memo: '・アジェンダを更新\n・参加者へリマインド',
+    folderId: 'work',
+    createdAt: '2026-08-09T15:20:00',
+    updatedAt: '2026-08-09T15:20:00',
+    favorite: false,
+    trashed: false,
+    attachments: [],
+  },
+  {
+    id: 'note-3',
+    title: '新サービスのアイデア',
+    body: 'シンプルなノート体験を軸に、写真とPDFを同じ場所で扱える体験を強化する。\n現場向けのクイック入力も検討。',
+    memo: '・ワイヤーを描く\n・ユーザーヒアリング',
+    folderId: 'ideas',
+    createdAt: '2026-08-08T11:15:00',
+    updatedAt: '2026-08-08T11:15:00',
+    favorite: true,
+    trashed: false,
+    attachments: [{ id: 'a4', type: 'image', name: 'sketch.png', preview: '#CBD5E1' }],
+  },
+  {
+    id: 'note-4',
+    title: '資材発注リスト',
+    body: '・ボルト M8 × 50本\n・ワッシャー × 100枚\n・養生テープ × 10巻\n納期希望：8/12',
+    memo: '・見積もり再確認',
+    folderId: 'materials',
+    createdAt: '2026-08-07T09:40:00',
+    updatedAt: '2026-08-07T09:40:00',
+    favorite: false,
+    trashed: false,
+    attachments: [{ id: 'a5', type: 'pdf', name: '発注書.pdf' }],
+  },
+  {
+    id: 'note-5',
+    title: 'お客様からの要望',
+    body: '操作をもっとシンプルにしてほしい、という声。\n特に写真添付の手順を短くしたい。',
+    memo: '・要望をプロダクトに反映',
+    folderId: 'private',
+    createdAt: '2026-08-05T18:05:00',
+    updatedAt: '2026-08-05T18:05:00',
+    favorite: false,
+    trashed: false,
+    attachments: [],
+  },
+  {
+    id: 'note-6',
+    title: '週末の買い物メモ',
+    body: '牛乳、パン、コーヒー豆。',
+    memo: '',
+    folderId: 'other',
+    createdAt: '2026-08-03T10:00:00',
+    updatedAt: '2026-08-03T10:00:00',
+    favorite: false,
+    trashed: false,
+    attachments: [],
+  },
+]
