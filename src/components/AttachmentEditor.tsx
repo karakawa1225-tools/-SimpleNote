@@ -1,7 +1,8 @@
 import { Paperclip } from 'lucide-react'
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 import { AttachmentCountLabel, AttachmentGallery } from '@/components/AttachmentGallery'
 import { createId } from '@/lib/storage'
+import { compressImageToDataUrl } from '@/lib/imageCompress'
 import {
   IMAGE_PLACEHOLDER_COLORS,
   MAX_ATTACHMENTS,
@@ -15,65 +16,68 @@ interface AttachmentEditorProps {
   className?: string
 }
 
-function readFileAsDataUrl(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader()
-    reader.onload = () => resolve(String(reader.result))
-    reader.onerror = () => reject(reader.error)
-    reader.readAsDataURL(file)
-  })
-}
-
 export function AttachmentEditor({
   attachments,
   onChange,
   className,
 }: AttachmentEditorProps) {
   const inputRef = useRef<HTMLInputElement>(null)
+  const [busy, setBusy] = useState(false)
+  const [attachError, setAttachError] = useState<string | null>(null)
   const remaining = MAX_ATTACHMENTS - attachments.length
   const atLimit = remaining <= 0
 
   const handleFiles = async (files: FileList | null) => {
-    if (!files || files.length === 0 || atLimit) return
+    if (!files || files.length === 0 || atLimit || busy) return
+    setBusy(true)
+    setAttachError(null)
     const selected = Array.from(files).slice(0, remaining)
     const created: Attachment[] = []
 
-    for (let i = 0; i < selected.length; i++) {
-      const file = selected[i]
-      const isPdf =
-        file.type === 'application/pdf' ||
-        file.name.toLowerCase().endsWith('.pdf')
-      const isImage = file.type.startsWith('image/')
+    try {
+      for (let i = 0; i < selected.length; i++) {
+        const file = selected[i]
+        const isPdf =
+          file.type === 'application/pdf' ||
+          file.name.toLowerCase().endsWith('.pdf')
+        const isImage = file.type.startsWith('image/')
 
-      if (!isPdf && !isImage) continue
+        if (!isPdf && !isImage) continue
 
-      if (isPdf) {
-        created.push({
-          id: createId('att'),
-          type: 'pdf',
-          name: file.name,
-        })
-      } else {
-        let preview: string
-        try {
-          preview = await readFileAsDataUrl(file)
-        } catch {
-          preview =
-            IMAGE_PLACEHOLDER_COLORS[
-              (attachments.length + i) % IMAGE_PLACEHOLDER_COLORS.length
-            ]
+        if (isPdf) {
+          created.push({
+            id: createId('att'),
+            type: 'pdf',
+            name: file.name,
+          })
+          continue
         }
+
+        const preview = await compressImageToDataUrl(file)
         created.push({
           id: createId('att'),
           type: 'image',
           name: file.name,
-          preview,
+          preview:
+            preview ||
+            IMAGE_PLACEHOLDER_COLORS[
+              (attachments.length + i) % IMAGE_PLACEHOLDER_COLORS.length
+            ],
         })
       }
-    }
 
-    if (created.length > 0) onChange([...attachments, ...created])
-    if (inputRef.current) inputRef.current.value = ''
+      if (created.length > 0) onChange([...attachments, ...created])
+      if (created.length < selected.length) {
+        setAttachError(
+          '一部のファイルは追加できませんでした（対応形式は画像とPDFです）。',
+        )
+      }
+    } catch {
+      setAttachError('添付の処理中にエラーが発生しました。別の画像でお試しください。')
+    } finally {
+      setBusy(false)
+      if (inputRef.current) inputRef.current.value = ''
+    }
   }
 
   return (
@@ -99,20 +103,29 @@ export function AttachmentEditor({
 
       <button
         type="button"
-        disabled={atLimit}
+        disabled={atLimit || busy}
         onClick={() => inputRef.current?.click()}
         className={cn(
           'inline-flex w-full items-center justify-center gap-2 rounded-xl border border-dashed py-3 text-sm font-bold transition',
-          atLimit
+          atLimit || busy
             ? 'cursor-not-allowed border-sn-line bg-sn-bg text-sn-muted/60'
             : 'border-sn-line bg-white text-sn-ink hover:border-sn-blue/40 hover:bg-sn-blue-soft',
         )}
       >
         <Paperclip className="h-4 w-4" />
-        {atLimit
-          ? `添付は最大${MAX_ATTACHMENTS}件までです`
-          : `＋ 写真・PDFを添付（残り${remaining}）`}
+        {busy
+          ? '画像を処理中…'
+          : atLimit
+            ? `添付は最大${MAX_ATTACHMENTS}件までです`
+            : `＋ 写真・PDFを添付（残り${remaining}）`}
       </button>
+
+      {attachError && (
+        <p className="text-xs font-semibold text-red-600">{attachError}</p>
+      )}
+      <p className="text-[11px] leading-5 text-sn-muted">
+        写真は保存用に自動で縮小・圧縮されます。PDFはファイル名のみ記録されます。
+      </p>
     </div>
   )
 }

@@ -88,8 +88,12 @@ export function NoteCard({
               a.type === 'image' ? (
                 <span
                   key={a.id}
-                  className="h-8 w-8 overflow-hidden rounded-md"
-                  style={{ background: a.preview ?? '#CBD5E1' }}
+                  className="h-8 w-8 overflow-hidden rounded-md bg-cover bg-center"
+                  style={
+                    a.preview?.startsWith('data:')
+                      ? { backgroundImage: `url(${a.preview})` }
+                      : { backgroundColor: a.preview ?? '#CBD5E1' }
+                  }
                   title={a.name}
                 />
               ) : (

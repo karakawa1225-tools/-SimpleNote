@@ -4,6 +4,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from 'react'
@@ -11,9 +12,28 @@ import { createId, loadNotes, saveNotes } from '@/lib/storage'
 import type { FolderId, Note } from '@/types/note'
 import { MAX_ATTACHMENTS } from '@/lib/attachments'
 
+function shrinkHeavyPreviews(notes: Note[]): Note[] {
+  return notes.map((n) => ({
+    ...n,
+    attachments: n.attachments.map((a) => {
+      if (
+        a.type === 'image' &&
+        typeof a.preview === 'string' &&
+        a.preview.startsWith('data:') &&
+        a.preview.length > 120_000
+      ) {
+        return { ...a, preview: '#94A3B8' }
+      }
+      return a
+    }),
+  }))
+}
+
 interface NotesContextValue {
   notes: Note[]
   activeNotes: Note[]
+  saveError: string | null
+  clearSaveError: () => void
   getNote: (id: string) => Note | undefined
   addNote: (input: {
     title: string
@@ -43,10 +63,36 @@ const NotesContext = createContext<NotesContextValue | null>(null)
 
 export function NotesProvider({ children }: { children: ReactNode }) {
   const [notes, setNotes] = useState<Note[]>(() => loadNotes())
+  const [saveError, setSaveError] = useState<string | null>(null)
+  const pendingSaveMessage = useRef<string | null>(null)
 
   useEffect(() => {
-    saveNotes(notes)
+    const result = saveNotes(notes)
+    if (result.ok) {
+      if (pendingSaveMessage.current) {
+        setSaveError(pendingSaveMessage.current)
+        pendingSaveMessage.current = null
+      } else {
+        setSaveError(null)
+      }
+      return
+    }
+
+    const shrunk = shrinkHeavyPreviews(notes)
+    const changed = JSON.stringify(shrunk) !== JSON.stringify(notes)
+    if (changed) {
+      const retry = saveNotes(shrunk)
+      if (retry.ok) {
+        pendingSaveMessage.current =
+          '保存容量の都合で、一部の写真プレビューを省略して保存しました。'
+        setNotes(shrunk)
+        return
+      }
+    }
+    setSaveError(result.error)
   }, [notes])
+
+  const clearSaveError = useCallback(() => setSaveError(null), [])
 
   // iframe デモ間で同じローカルデータを共有
   useEffect(() => {
@@ -214,6 +260,8 @@ export function NotesProvider({ children }: { children: ReactNode }) {
     () => ({
       notes,
       activeNotes,
+      saveError,
+      clearSaveError,
       getNote,
       addNote,
       updateNote,
@@ -232,6 +280,8 @@ export function NotesProvider({ children }: { children: ReactNode }) {
     [
       notes,
       activeNotes,
+      saveError,
+      clearSaveError,
       getNote,
       addNote,
       updateNote,

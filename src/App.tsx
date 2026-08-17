@@ -1,5 +1,6 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { AppShell } from '@/components/AppShell'
+import { SaveErrorBanner } from '@/components/SaveErrorBanner'
 import { LayoutProvider } from '@/context/LayoutContext'
 import { NotesProvider } from '@/context/NotesContext'
 import { CalendarPage } from '@/pages/CalendarPage'
@@ -21,6 +22,7 @@ export default function App() {
     <NotesProvider>
       <BrowserRouter>
         <LayoutProvider>
+          <SaveErrorBanner />
           <Routes>
             <Route path="/" element={<LandingPage />} />
             <Route path="/landing" element={<LandingPage />} />
