@@ -1,4 +1,5 @@
 import { FileText, Image as ImageIcon, Pencil, Trash2 } from 'lucide-react'
+import { AttachmentThumb } from '@/components/AttachmentViewer'
 import { folderById } from '@/data/sampleNotes'
 import { formatDateTime } from '@/lib/date'
 import { cn } from '@/lib/cn'
@@ -88,14 +89,11 @@ export function NoteCard({
               a.type === 'image' ? (
                 <span
                   key={a.id}
-                  className="h-8 w-8 overflow-hidden rounded-md bg-cover bg-center"
-                  style={
-                    a.preview?.startsWith('data:')
-                      ? { backgroundImage: `url(${a.preview})` }
-                      : { backgroundColor: a.preview ?? '#CBD5E1' }
-                  }
+                  className="h-8 w-8 overflow-hidden rounded-md"
                   title={a.name}
-                />
+                >
+                  <AttachmentThumb id={a.id} preview={a.preview} />
+                </span>
               ) : (
                 <span
                   key={a.id}

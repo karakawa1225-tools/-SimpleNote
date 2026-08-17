@@ -259,8 +259,7 @@ export function SettingsPage({ compact }: { compact?: boolean }) {
       <div className="space-y-3 rounded-2xl border border-sn-line bg-white p-4 text-sm">
         <p className="font-bold text-sn-navy">データ保存</p>
         <p className="leading-6 text-sn-muted">
-          NOTEは端末内のローカルストレージ（スマホの内部フォルダ相当）に保存されます。
-          ブラウザを閉じてもデータは残ります。
+          NOTEの文章は端末内に保存されます。写真・PDFの実ファイルはブラウザのローカル領域（IndexedDB）に置き、タップで拡大表示できます。画面右上のダウンロードから、スマホ／PCのフォルダへも保存できます。
         </p>
         <p className="pt-2 font-bold text-sn-navy">バージョン</p>
         <p className="text-sn-muted">SimpleNote 1.0.0</p>

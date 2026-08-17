@@ -2,7 +2,8 @@ import { Paperclip } from 'lucide-react'
 import { useRef, useState } from 'react'
 import { AttachmentCountLabel, AttachmentGallery } from '@/components/AttachmentGallery'
 import { createId } from '@/lib/storage'
-import { compressImageToDataUrl } from '@/lib/imageCompress'
+import { prepareImageFile } from '@/lib/imageCompress'
+import { putFile } from '@/lib/fileStore'
 import {
   IMAGE_PLACEHOLDER_COLORS,
   MAX_ATTACHMENTS,
@@ -44,22 +45,36 @@ export function AttachmentEditor({
 
         if (!isPdf && !isImage) continue
 
+        const id = createId('att')
+
         if (isPdf) {
+          await putFile({
+            id,
+            name: file.name,
+            mime: file.type || 'application/pdf',
+            blob: file,
+          })
           created.push({
-            id: createId('att'),
+            id,
             type: 'pdf',
             name: file.name,
           })
           continue
         }
 
-        const preview = await compressImageToDataUrl(file)
+        const prepared = await prepareImageFile(file)
+        await putFile({
+          id,
+          name: file.name,
+          mime: prepared.mime,
+          blob: prepared.blob,
+        })
         created.push({
-          id: createId('att'),
+          id,
           type: 'image',
           name: file.name,
           preview:
-            preview ||
+            prepared.thumb ||
             IMAGE_PLACEHOLDER_COLORS[
               (attachments.length + i) % IMAGE_PLACEHOLDER_COLORS.length
             ],
@@ -114,7 +129,7 @@ export function AttachmentEditor({
       >
         <Paperclip className="h-4 w-4" />
         {busy
-          ? '画像を処理中…'
+          ? 'ファイルを保存中…'
           : atLimit
             ? `添付は最大${MAX_ATTACHMENTS}件までです`
             : `＋ 写真・PDFを添付（残り${remaining}）`}
@@ -124,7 +139,7 @@ export function AttachmentEditor({
         <p className="text-xs font-semibold text-red-600">{attachError}</p>
       )}
       <p className="text-[11px] leading-5 text-sn-muted">
-        写真は保存用に自動で縮小・圧縮されます。PDFはファイル名のみ記録されます。
+        写真・PDFの実ファイルは端末内に保存されます。タップで拡大表示、ダウンロードでフォルダに保存できます。
       </p>
     </div>
   )
